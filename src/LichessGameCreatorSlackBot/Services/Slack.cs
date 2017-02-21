@@ -97,7 +97,7 @@ namespace LichessGameCreatorSlackBot.Services
         private async Task ParseMessage(Message message)
         {
             StringBuilder response = new StringBuilder();
-            string content = message.text.ToLower();
+            string content = message.text.ToLower().Substring(6);
             if (content.Contains("new"))
             {
                 response.Append(Lichess.CreateGame(content).Result);
@@ -110,23 +110,23 @@ namespace LichessGameCreatorSlackBot.Services
                 response.Append(_timeControlHelpMessage + Environment.NewLine);
             if (content.Contains("gamevariant") || content.Contains("variant"))
                 response.Append(_gameVariantHelpMessage + Environment.NewLine);
-            if(content.Contains("Standard"))
+            if(content.Contains("standard"))
                 response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Standard) + Environment.NewLine);
-            if (content.Contains("Crazyhouse"))
+            if (content.Contains("crazyhouse"))
                 response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Crazyhouse) + Environment.NewLine);
-            if (content.Contains("KingOfTheHill"))
+            if (content.Contains("kingofthehill"))
                 response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.KingOfTheHill) + Environment.NewLine);
-            if (content.Contains("ThreeCheck"))
+            if (content.Contains("threecheck"))
                 response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.ThreeCheck) + Environment.NewLine);
-            if (content.Contains("AntiChess"))
+            if (content.Contains("antichess"))
                 response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.AntiChess) + Environment.NewLine);
-            if (content.Contains("Atomic"))
+            if (content.Contains("atomic"))
                 response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Atomic) + Environment.NewLine);
-            if (content.Contains("Horde"))
+            if (content.Contains("horde"))
                 response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Horde) + Environment.NewLine);
-            if (content.Contains("RacingKings"))
+            if (content.Contains("racingkings"))
                 response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.RacingKings) + Environment.NewLine);
-            if (content.Contains("FromPosition"))
+            if (content.Contains("fromposition"))
                 response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.FromPosition) + Environment.NewLine);
             else if(content.Equals("!chess"))
                 response.Append(_helpMessage);
