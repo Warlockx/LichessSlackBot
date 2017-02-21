@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LichessGameCreatorSlackBot.Services;
 
 namespace LichessGameCreatorSlackBot
 {
@@ -11,19 +12,20 @@ namespace LichessGameCreatorSlackBot
 
         public static void Main(string[] args)
         {
+
             Slack slack = new Slack();
+            Console.WriteLine("is authed = " + slack.TestAuthentication().Result);
                 Task.Factory.StartNew(() =>
                 {
                     while (true)
                     {
                         slack.GetMessages().Wait();
-                        Thread.Sleep(2000);
+                        Thread.Sleep(1000);
                     }
                
                 });
-           
-            //Lichess.ParseSettings("!chess color:random        , timemode:Correspondence               , variant:Atomic");
-           // Console.WriteLine("is authed = "+ slack.TestAuthentication().Result);
+            Console.WriteLine("Bot Running...");
+           // 
             Console.ReadKey();
         }
     }

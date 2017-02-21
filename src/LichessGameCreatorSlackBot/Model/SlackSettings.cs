@@ -7,17 +7,19 @@ namespace LichessGameCreatorSlackBot.Model
 {
     public class SlackSettings
     {
-        public string ChannelKey { get; set; }
-        public string ApiKey { get; set; }
-        public string LastReadMessage { get; set; }
-        public string BotUserId { get; set; }
+        public string ChannelKey { get; }
+        public string ApiKey { get; }
+        public string LastReadMessage { get; }
+        public string BotUserId { get; }
+        public string BotName{ get; }
 
-        public SlackSettings(string channelKey, string apiKey, string lastReadMessage,string botUserId)
+        public SlackSettings(string channelKey, string apiKey, string lastReadMessage,string botUserId,string botName)
         {
             ChannelKey = channelKey;
             ApiKey = apiKey;
             LastReadMessage = lastReadMessage;
             BotUserId = botUserId;
+            BotName = botName;
         }
     }
 }

@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 using LichessGameCreatorSlackBot.Model;
 using Newtonsoft.Json;
 
-namespace LichessGameCreatorSlackBot
+namespace LichessGameCreatorSlackBot.Services
 {
     public class Slack
     {
@@ -18,7 +16,7 @@ namespace LichessGameCreatorSlackBot
         private string _channelKey;
         private string _lastReadMessage = string.Empty;
         private string _botUserId;
-
+        private string _botName;
         #region Responses
         private string _timeControlHelpMessage = ">The possible Time Modes are 'RealTime', 'Correspondence', 'Unlimited'.";
         private string _colorHelpMessage = ">The possible colors are 'Random', 'Black', 'White'.";
@@ -62,6 +60,7 @@ namespace LichessGameCreatorSlackBot
                     _channelKey = slackSettings.ChannelKey;
                     _lastReadMessage = slackSettings.LastReadMessage;
                     _botUserId = slackSettings.BotUserId;
+                    _botName = slackSettings.BotName;
                     reader.Dispose();
                 }
                 catch (Exception ex)
@@ -74,7 +73,7 @@ namespace LichessGameCreatorSlackBot
 
         private void SaveSettings()
         {
-            SlackSettings newSettings = new SlackSettings(_channelKey, _apiKey, _lastReadMessage,_botUserId);
+            SlackSettings newSettings = new SlackSettings(_channelKey, _apiKey, _lastReadMessage,_botUserId,_botName);
             using (Stream fileStream = File.OpenWrite(_settingsFileLocation))
             {
                 StreamWriter writer = new StreamWriter(fileStream);
@@ -98,18 +97,17 @@ namespace LichessGameCreatorSlackBot
             string content = message.text.ToLower();
             if (content.Contains("new"))
             {
-                //create game
-                await PostMessage(_channelKey, Lichess.CreateGame(content).Result);
+                await PostMessage(Lichess.CreateGame(content).Result);
                 return;
             }
             if (content.Contains("color"))
-                await PostMessage(_channelKey, _colorHelpMessage);
+                await PostMessage(_colorHelpMessage);
             else if (content.Contains("timecontrol") || content.Contains("timemode"))
-                await PostMessage(_channelKey, _timeControlHelpMessage);
+                await PostMessage( _timeControlHelpMessage);
             else if (content.Contains("gamevariant") || content.Contains("variant"))
-                await PostMessage(_channelKey, _gameVariantHelpMessage);
+                await PostMessage(_gameVariantHelpMessage);
             else
-                await PostMessage(_channelKey, _helpMessage);
+                await PostMessage(_helpMessage);
 
         }
 
@@ -149,10 +147,10 @@ namespace LichessGameCreatorSlackBot
             
         }
 
-        public async Task PostMessage(string channel,string message)
+        public async Task PostMessage(string message)
         {
             HttpResponseMessage response =
-                await _httpClient.GetAsync($"chat.postMessage?token={_apiKey}&channel={_channelKey}&text={message}");
+                await _httpClient.GetAsync($"chat.postMessage?token={_apiKey}&channel={_channelKey}&text={message}&username={_botName}");
 
             if (response.IsSuccessStatusCode) return;
 

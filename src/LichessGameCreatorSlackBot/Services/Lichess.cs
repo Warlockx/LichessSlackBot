@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using LichessGameCreatorSlackBot.Model;
 
-namespace LichessGameCreatorSlackBot
+namespace LichessGameCreatorSlackBot.Services
 {
     public static class Lichess
     {
@@ -15,23 +15,36 @@ namespace LichessGameCreatorSlackBot
         {
             _httpClient = new HttpClient();
             _httpClient.BaseAddress = new Uri("https://en.lichess.org/");
+            _httpClient.DefaultRequestHeaders.Add("Origin",new []{ "https://en.lichess.org" });
+           
         }
         public static async Task<string> CreateGame(string settings)
         {
             Tuple<ChessColors, ChessTimeControl, ChessGameVariants,string,string,string> gameSettings = ParseSettings(settings);
+           
             FormUrlEncodedContent content = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("color", gameSettings.Item1.ToString() ?? "random"),
-                new KeyValuePair<string, string>("days", "1"),
-                new KeyValuePair<string, string>("fen", gameSettings.Item4 ?? ""),
-                new KeyValuePair<string, string>("increment", gameSettings.Item5 ?? "8"),
-                new KeyValuePair<string, string>("time", gameSettings.Item6 ?? "5.0"),
-                new KeyValuePair<string, string>("timeMode", ((int)gameSettings.Item2).ToString() ?? "0"),
-                new KeyValuePair<string, string>("variant", ((int)gameSettings.Item3).ToString() ?? "1")
+                new KeyValuePair<string, string>("color", gameSettings.Item1.ToString().ToLower()),
+                new KeyValuePair<string, string>("days", "2"),
+                new KeyValuePair<string, string>("fen", gameSettings.Item4),
+                new KeyValuePair<string, string>("increment", gameSettings.Item5),
+                new KeyValuePair<string, string>("time", gameSettings.Item6),
+                new KeyValuePair<string, string>("timeMode", ((int)gameSettings.Item2).ToString().ToLower()),
+                new KeyValuePair<string, string>("variant", ((int)gameSettings.Item3).ToString().ToLower())
             });
-            return
-                $"Creating game with the settings color:{gameSettings.Item1}, fen:{gameSettings.Item4}, increment:{gameSettings.Item5}, time:{gameSettings.Item6}, timemode:{gameSettings.Item2}, variant:{gameSettings.Item3}";
-            //  await _httpClient.PostAsync("/setup/friend", content);
+           // return $"Creating game with the settings color:{gameSettings.Item1.ToString().ToLower()}, fen:{gameSettings.Item4}, increment:{gameSettings.Item5}, time:{gameSettings.Item6}, timemode:{((int)gameSettings.Item2).ToString().ToLower()}, variant:{((int)gameSettings.Item3).ToString().ToLower()}";
+            HttpResponseMessage response = await _httpClient.PostAsync("/setup/friend", content);
+
+            StringBuilder botAnswer = new StringBuilder();
+
+            botAnswer.Append($">Request Status Code:{response.StatusCode}\n");
+            if (!response.IsSuccessStatusCode)
+            {
+                botAnswer.Append(">I coudnt find the game link in the response, something went wrong.");
+                return botAnswer.ToString();
+            }
+            botAnswer.Append($">Game Link:{response.RequestMessage.RequestUri}");
+            return botAnswer.ToString();
         }
 
         public static Tuple<ChessColors,ChessTimeControl,ChessGameVariants,string,string,string> ParseSettings(string settings)
