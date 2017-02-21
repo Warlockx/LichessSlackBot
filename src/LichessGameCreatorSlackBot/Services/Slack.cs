@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using LichessGameCreatorSlackBot.Model;
 using Newtonsoft.Json;
@@ -92,41 +93,46 @@ namespace LichessGameCreatorSlackBot.Services
             }
         }
 
+      
         private async Task ParseMessage(Message message)
         {
+            StringBuilder response = new StringBuilder();
             string content = message.text.ToLower();
             if (content.Contains("new"))
             {
-                await PostMessage(Lichess.CreateGame(content).Result);
+                response.Append(Lichess.CreateGame(content).Result);
+                await PostMessage(response.ToString());
                 return;
             }
             if (content.Contains("color"))
-                await PostMessage(_colorHelpMessage);
-            else if (content.Contains("timecontrol") || content.Contains("timemode"))
-                await PostMessage( _timeControlHelpMessage);
-            else if (content.Contains("gamevariant") || content.Contains("variant"))
-                await PostMessage(_gameVariantHelpMessage);
-            else if(content.Contains("Standard"))
-                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.Standard));
-            else if (content.Contains("Crazyhouse"))
-                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.Crazyhouse));
-            else if (content.Contains("KingOfTheHill"))
-                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.KingOfTheHill));
-            else if (content.Contains("ThreeCheck"))
-                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.ThreeCheck));
-            else if (content.Contains("AntiChess"))
-                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.AntiChess));
-            else if (content.Contains("Atomic"))
-                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.Atomic));
-            else if (content.Contains("Horde"))
-                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.Horde));
-            else if (content.Contains("RacingKings"))
-                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.RacingKings));
-            else if (content.Contains("FromPosition"))
-                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.FromPosition));
-            else
-                await PostMessage(_helpMessage);
+                response.Append(_colorHelpMessage+Environment.NewLine);
+            if (content.Contains("timecontrol") || content.Contains("timemode"))
+                response.Append(_timeControlHelpMessage + Environment.NewLine);
+            if (content.Contains("gamevariant") || content.Contains("variant"))
+                response.Append(_gameVariantHelpMessage + Environment.NewLine);
+            if(content.Contains("Standard"))
+                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Standard) + Environment.NewLine);
+            if (content.Contains("Crazyhouse"))
+                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Crazyhouse) + Environment.NewLine);
+            if (content.Contains("KingOfTheHill"))
+                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.KingOfTheHill) + Environment.NewLine);
+            if (content.Contains("ThreeCheck"))
+                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.ThreeCheck) + Environment.NewLine);
+            if (content.Contains("AntiChess"))
+                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.AntiChess) + Environment.NewLine);
+            if (content.Contains("Atomic"))
+                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Atomic) + Environment.NewLine);
+            if (content.Contains("Horde"))
+                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Horde) + Environment.NewLine);
+            if (content.Contains("RacingKings"))
+                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.RacingKings) + Environment.NewLine);
+            if (content.Contains("FromPosition"))
+                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.FromPosition) + Environment.NewLine);
+            else if(content.Equals("!chess"))
+                response.Append(_helpMessage);
 
+
+            await PostMessage(response.ToString());
         }
 
         public async Task GetMessages()
@@ -169,10 +175,8 @@ namespace LichessGameCreatorSlackBot.Services
         {
             HttpResponseMessage response =
                 await _httpClient.GetAsync($"chat.postMessage?token={_apiKey}&channel={_channelKey}&text={message}&username={_botName}");
-
-            if (response.IsSuccessStatusCode) return;
-
-            Console.WriteLine(await response.Content.ReadAsStringAsync());
+          
+            Console.WriteLine($"Message sent | status:{response.StatusCode} response {await response.Content.ReadAsStringAsync()}.");
 
 
         }
