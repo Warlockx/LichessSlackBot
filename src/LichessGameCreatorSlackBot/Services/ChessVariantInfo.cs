@@ -28,7 +28,7 @@ namespace LichessGameCreatorSlackBot.Services
                 case ChessGameVariants.RacingKings:
                     return ">Race your King to the eighth rank to win.";
                 case ChessGameVariants.FromPosition:
-                    return ">Custom starting position";
+                    return ">Custom starting position, needs to set fen parameter to work.";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(chessGame), chessGame, null);
             }

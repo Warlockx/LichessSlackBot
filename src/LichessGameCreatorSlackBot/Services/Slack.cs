@@ -106,6 +106,24 @@ namespace LichessGameCreatorSlackBot.Services
                 await PostMessage( _timeControlHelpMessage);
             else if (content.Contains("gamevariant") || content.Contains("variant"))
                 await PostMessage(_gameVariantHelpMessage);
+            else if(content.Contains("Standard"))
+                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.Standard));
+            else if (content.Contains("Crazyhouse"))
+                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.Crazyhouse));
+            else if (content.Contains("KingOfTheHill"))
+                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.KingOfTheHill));
+            else if (content.Contains("ThreeCheck"))
+                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.ThreeCheck));
+            else if (content.Contains("AntiChess"))
+                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.AntiChess));
+            else if (content.Contains("Atomic"))
+                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.Atomic));
+            else if (content.Contains("Horde"))
+                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.Horde));
+            else if (content.Contains("RacingKings"))
+                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.RacingKings));
+            else if (content.Contains("FromPosition"))
+                await PostMessage(ChessVariantInfo.GetInfo(ChessGameVariants.FromPosition));
             else
                 await PostMessage(_helpMessage);
 
