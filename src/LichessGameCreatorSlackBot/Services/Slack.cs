@@ -19,10 +19,10 @@ namespace LichessGameCreatorSlackBot.Services
         private string _botUserId;
         private string _botName;
         #region Responses
-        private string _timeControlHelpMessage = ">The possible Time Modes are 'RealTime', 'Correspondence', 'Unlimited'.";
-        private string _colorHelpMessage = ">The possible colors are 'Random', 'Black', 'White'.";
-        private string _gameVariantHelpMessage = ">The possible variants are 'Standard', 'Crazyhouse', 'Chess960', 'KingOfTheHill', 'ThreeCheck', 'AntiChess', 'Atomic', 'Horde', 'RacingKings', 'FromPosition'.";
-        private string _helpMessage = ">To create a new game with default settings type !chess \n" +
+        private readonly string _timeControlHelpMessage = ">The possible Time Modes are 'RealTime', 'Correspondence', 'Unlimited'.";
+        private readonly string _colorHelpMessage = ">The possible colors are 'Random', 'Black', 'White'.";
+        private readonly string _gameVariantHelpMessage = ">The possible variants are 'Standard', 'Crazyhouse', 'Chess960', 'KingOfTheHill', 'ThreeCheck', 'AntiChess', 'Atomic', 'Horde', 'RacingKings', 'FromPosition'.";
+        private readonly string _helpMessage = ">To create a new game with default settings type !chess \n" +
                                       ">or customize the game with the following options '!chess new color:{Color}, timemode:{TimeControl}, variant:{GameVariant}, fen:{string}, increment:{int}, time:{double}'\n" +
                                       ">you can also ask about the option variables by saying !chess {variable}.";
         #endregion
@@ -108,44 +108,27 @@ namespace LichessGameCreatorSlackBot.Services
                 case "variant":
                     response.Append(_gameVariantHelpMessage + Environment.NewLine);
                     break;
-                case "standard":
-                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Standard) + Environment.NewLine);
-                    break;
-                case "crazyhouse":
-                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Crazyhouse) + Environment.NewLine);
-                    break;
-                case "kingofthehill":
-                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.KingOfTheHill) + Environment.NewLine);
-                    break;
-                case "threecheck":
-                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.ThreeCheck) + Environment.NewLine);
-                    break;
-                case "antichess":
-                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.AntiChess) + Environment.NewLine);
-                    break;
-                case "atomic":
-                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Atomic) + Environment.NewLine);
-                    break;
-                case "horde":
-                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Horde) + Environment.NewLine);
-                    break;
-                case "racingkings":
-                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.RacingKings) + Environment.NewLine);
-                    break;
-                case "fromposition":
-                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.FromPosition) + Environment.NewLine);
-                    break;
                 default:
-                    if(!response.ToString().Contains(_helpMessage))
-                        response.Append(_helpMessage);
+                {
+                    object variant = param.GetEnum<ChessGameVariants>();
+                    if (variant != null)
+                    {
+                        response.Append(ChessVariantInfo.GetInfo((ChessGameVariants)variant) + Environment.NewLine);
+                        break;
+                    }
+
+                    if (!response.ToString().Contains(_helpMessage))
+                        response.Append(_helpMessage + Environment.NewLine);
                     break;
+                }
             }
         }
 
         private async Task ParseMessage(Message message)
         {
             StringBuilder response = new StringBuilder();
-            string[] content = message.text.ToLower().Substring(6).Split(new [] {","," "},StringSplitOptions.RemoveEmptyEntries);
+            string[] content = message.text.ToLower().Substring(6).Split(new [] {","," ", ":"},StringSplitOptions.RemoveEmptyEntries);
+
             if (message.text.ToLower().Contains("new"))
             {
                 response.Append(Lichess.CreateGame(message.text.ToLower()).Result);
@@ -162,46 +145,46 @@ namespace LichessGameCreatorSlackBot.Services
 
         public async Task GetMessages()
         {
-            string useLatest = _lastReadMessage != string.Empty ? $"&oldest={_lastReadMessage}" : string.Empty;
-            
-            HttpResponseMessage response =
-                await _httpClient.GetAsync($"channels.history?token={_apiKey}&channel={_channelKey}{useLatest}");
-
-          
-            if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException("Error while getting new history messages.");
-
-           
-           string responseContent = await response.Content.ReadAsStringAsync();
-
-            HistoryMessageResponse historyMessage =
-                JsonConvert.DeserializeObject<HistoryMessageResponse>(responseContent);
-            string lastMessageId = historyMessage?.messages?.FirstOrDefault()?.ts;
-            if (!string.IsNullOrEmpty(lastMessageId))
-                _lastReadMessage = lastMessageId;
-
-            IEnumerable<Message> botMessages = historyMessage?.messages?.Where(m => m.text.StartsWith("!chess"));
-
-            if (botMessages != null)
+            while (true)
             {
-                foreach (Message botMessage in botMessages)
+                string useLatest = _lastReadMessage != string.Empty ? $"&oldest={_lastReadMessage}" : string.Empty;
+
+                HttpResponseMessage response = await _httpClient.GetAsync($"channels.history?token={_apiKey}&channel={_channelKey}{useLatest}");
+
+
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException("Error while getting new history messages.");
+
+
+                string responseContent = await response.Content.ReadAsStringAsync();
+
+                HistoryMessageResponse historyMessage = JsonConvert.DeserializeObject<HistoryMessageResponse>(responseContent);
+                string lastMessageId = historyMessage?.messages?.FirstOrDefault()?.ts;
+                if (!string.IsNullOrEmpty(lastMessageId))
+                    _lastReadMessage = lastMessageId;
+
+                IEnumerable<Message> botMessages = historyMessage?.messages?.Where(m => m.text.StartsWith("!chess"));
+
+                if (botMessages != null)
                 {
-                    await ParseMessage(botMessage);
+                    foreach (Message botMessage in botMessages)
+                    {
+                        await ParseMessage(botMessage);
+                    }
                 }
-            }
-            if (historyMessage != null && historyMessage.has_more)
-                await GetMessages();
-            else
+                if (historyMessage != null && historyMessage.has_more)
+                    continue;
                 SaveSettings();
-            
+                break;
+            }
         }
 
-        public async Task PostMessage(string message)
+        private async Task PostMessage(string message)
         {
             HttpResponseMessage response =
                 await _httpClient.GetAsync($"chat.postMessage?token={_apiKey}&channel={_channelKey}&text={message}&username={_botName}");
           
-            Console.WriteLine($"Message sent | status:{response.StatusCode} response {await response.Content.ReadAsStringAsync()}.");
+            Console.WriteLine($"Message sent | status: {response.StatusCode} response: {await response.Content.ReadAsStringAsync()}.");
 
 
         }

@@ -37,17 +37,18 @@ namespace LichessGameCreatorSlackBot.Services
 
             StringBuilder botAnswer = new StringBuilder();
 
-            botAnswer.Append($">Request Status Code:{response.StatusCode}\n");
+          
             if (!response.IsSuccessStatusCode)
             {
-                botAnswer.Append(">I coudnt find the game link in the response, something went wrong.");
+                botAnswer.Append($">Request Status Code:{response.StatusCode}\n" +
+                                 ">I coudnt find the game link in the response, something went wrong.");
                 return botAnswer.ToString();
             }
             botAnswer.Append($">Game Link:{response.RequestMessage.RequestUri}");
             return botAnswer.ToString();
         }
 
-        public static Tuple<ChessColors,ChessTimeControl,ChessGameVariants,string,string,string> ParseSettings(string settings)
+        private static Tuple<ChessColors,ChessTimeControl,ChessGameVariants,string,string,string> ParseSettings(string settings)
         {
             //!chess new color:{Color}, timemode:{TimeControl}, variant:{GameVariant}, fen:{string}, increment:{int}, time:{double}
             int settingsIndexStart = settings.IndexOf("new", StringComparison.Ordinal) + 4;
@@ -60,7 +61,7 @@ namespace LichessGameCreatorSlackBot.Services
 
 
 
-            string[] settingStrings = settings.Substring(settingsIndexStart).ToLower().Trim().Split(',');
+            string[] settingStrings = settings.Substring(settingsIndexStart).ToLower().Replace(" ", "").Split(',');
             string color = string.Empty;
             string timemode = string.Empty;
             string variant = string.Empty;
@@ -72,9 +73,9 @@ namespace LichessGameCreatorSlackBot.Services
                 if (setting.Contains("color"))
                     color = setting.Substring(6, setting.Length - 6);
                 else if (setting.Contains("timemode"))
-                    timemode = setting.Substring(10, setting.Length - 10);
+                    timemode = setting.Substring(9, setting.Length - 9);
                 else if (setting.Contains("variant"))
-                    variant = setting.Substring(9, setting.Length - 9);
+                    variant = setting.Substring(8, setting.Length - 8);
                 else if (setting.Contains("fen"))
                     fen = setting.Substring(4, setting.Length - 4);
                 else if (setting.Contains("increment"))
@@ -83,9 +84,9 @@ namespace LichessGameCreatorSlackBot.Services
                     time = setting.Substring(5, setting.Length - 5);
             }
 
-            ChessColors chessColors = string.IsNullOrEmpty(color) ? ChessColors.Random : color.GetEnum<ChessColors>();
-            ChessTimeControl chessTimeControl = string.IsNullOrEmpty(timemode) ? ChessTimeControl.Unlimited : timemode.GetEnum<ChessTimeControl>();
-            ChessGameVariants chessGameVariants = string.IsNullOrEmpty(variant) ? ChessGameVariants.Standard : variant.GetEnum<ChessGameVariants>();
+            ChessColors chessColors = (ChessColors)(string.IsNullOrEmpty(color) ? ChessColors.Random : color.GetEnum<ChessColors>());
+            ChessTimeControl chessTimeControl = (ChessTimeControl)(string.IsNullOrEmpty(timemode) ? ChessTimeControl.Unlimited : timemode.GetEnum<ChessTimeControl>());
+            ChessGameVariants chessGameVariants = (ChessGameVariants)(string.IsNullOrEmpty(variant) ? ChessGameVariants.Standard : variant.GetEnum<ChessGameVariants>());
 
             return new Tuple<ChessColors, ChessTimeControl, ChessGameVariants,string,string,string>(chessColors,chessTimeControl,chessGameVariants,fen,increment,time);
         }

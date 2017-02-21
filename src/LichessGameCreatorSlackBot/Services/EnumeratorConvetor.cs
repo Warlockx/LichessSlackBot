@@ -5,7 +5,7 @@ namespace LichessGameCreatorSlackBot.Services
 {
     public static class EnumeratorConvetor
     {
-        public static T GetEnum<T>(this string s)
+        public static object GetEnum<T>(this string s)
         {
             try
             {
@@ -16,7 +16,7 @@ namespace LichessGameCreatorSlackBot.Services
               Console.WriteLine($"Exception raised at the function {nameof(GetEnum)} : {e.Message}");
             }
             
-            return default(T);
+            return null;
         }
     }
 }
