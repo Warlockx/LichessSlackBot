@@ -93,45 +93,70 @@ namespace LichessGameCreatorSlackBot.Services
             }
         }
 
-      
+        private void ParseMessageParams(ref StringBuilder response,string param)
+        {
+            switch (param)
+            {
+                case "color":
+                    response.Append(_colorHelpMessage + Environment.NewLine);
+                    break;
+                case "timecontrol":
+                case "timemode":
+                    response.Append(_timeControlHelpMessage + Environment.NewLine);
+                    break;
+                case "gamevariant":
+                case "variant":
+                    response.Append(_gameVariantHelpMessage + Environment.NewLine);
+                    break;
+                case "standard":
+                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Standard) + Environment.NewLine);
+                    break;
+                case "crazyhouse":
+                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Crazyhouse) + Environment.NewLine);
+                    break;
+                case "kingofthehill":
+                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.KingOfTheHill) + Environment.NewLine);
+                    break;
+                case "threecheck":
+                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.ThreeCheck) + Environment.NewLine);
+                    break;
+                case "antichess":
+                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.AntiChess) + Environment.NewLine);
+                    break;
+                case "atomic":
+                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Atomic) + Environment.NewLine);
+                    break;
+                case "horde":
+                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Horde) + Environment.NewLine);
+                    break;
+                case "racingkings":
+                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.RacingKings) + Environment.NewLine);
+                    break;
+                case "fromposition":
+                    response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.FromPosition) + Environment.NewLine);
+                    break;
+                default:
+                    if(!response.ToString().Contains(_helpMessage))
+                        response.Append(_helpMessage);
+                    break;
+            }
+        }
+
         private async Task ParseMessage(Message message)
         {
             StringBuilder response = new StringBuilder();
-            string content = message.text.ToLower().Substring(6);
-            if (content.Contains("new"))
+            string[] content = message.text.ToLower().Substring(6).Split(new [] {","," "},StringSplitOptions.RemoveEmptyEntries);
+            if (message.text.ToLower().Contains("new"))
             {
-                response.Append(Lichess.CreateGame(content).Result);
+                response.Append(Lichess.CreateGame(message.text.ToLower()).Result);
                 await PostMessage(response.ToString());
                 return;
             }
-            if (content.Contains("color"))
-                response.Append(_colorHelpMessage+Environment.NewLine);
-            if (content.Contains("timecontrol") || content.Contains("timemode"))
-                response.Append(_timeControlHelpMessage + Environment.NewLine);
-            if (content.Contains("gamevariant") || content.Contains("variant"))
-                response.Append(_gameVariantHelpMessage + Environment.NewLine);
-            if(content.Contains("standard"))
-                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Standard) + Environment.NewLine);
-            if (content.Contains("crazyhouse"))
-                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Crazyhouse) + Environment.NewLine);
-            if (content.Contains("kingofthehill"))
-                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.KingOfTheHill) + Environment.NewLine);
-            if (content.Contains("threecheck"))
-                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.ThreeCheck) + Environment.NewLine);
-            if (content.Contains("antichess"))
-                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.AntiChess) + Environment.NewLine);
-            if (content.Contains("atomic"))
-                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Atomic) + Environment.NewLine);
-            if (content.Contains("horde"))
-                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.Horde) + Environment.NewLine);
-            if (content.Contains("racingkings"))
-                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.RacingKings) + Environment.NewLine);
-            if (content.Contains("fromposition"))
-                response.Append(ChessVariantInfo.GetInfo(ChessGameVariants.FromPosition) + Environment.NewLine);
-            else if(content.Equals("!chess"))
-                response.Append(_helpMessage);
-
-
+            foreach (string param in content)
+            {
+                if (!string.IsNullOrEmpty(param))
+                    ParseMessageParams(ref response,param);
+            }
             await PostMessage(response.ToString());
         }
 
