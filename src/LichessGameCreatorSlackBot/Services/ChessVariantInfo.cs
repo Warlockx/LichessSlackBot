@@ -30,7 +30,7 @@ namespace LichessGameCreatorSlackBot.Services
                 case ChessGameVariants.FromPosition:
                     return ">FromPosition: Custom starting position, needs to set fen parameter to work.";
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(chessGame), chessGame, null);
+                    return $"{chessGame}: Not Found.";
             }
         }
     }
