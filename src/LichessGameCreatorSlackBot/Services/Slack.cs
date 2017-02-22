@@ -22,7 +22,7 @@ namespace LichessGameCreatorSlackBot.Services
         private readonly string _timeControlHelpMessage = ">The possible Time Modes are 'RealTime', 'Correspondence', 'Unlimited'.";
         private readonly string _colorHelpMessage = ">The possible colors are 'Random', 'Black', 'White'.";
         private readonly string _gameVariantHelpMessage = ">The possible variants are 'Standard', 'Crazyhouse', 'Chess960', 'KingOfTheHill', 'ThreeCheck', 'AntiChess', 'Atomic', 'Horde', 'RacingKings', 'FromPosition'.";
-        private readonly string _helpMessage = ">To create a new game with default settings type !chess \n" +
+        private readonly string _helpMessage = ">To create a new game with default settings type !chess new \n" +
                                       ">or customize the game with the following options '!chess new color:{Color}, timemode:{TimeControl}, variant:{GameVariant}, fen:{string}, increment:{int}, time:{double}'\n" +
                                       ">you can also ask about the option variables by saying !chess {variable}.";
         #endregion
